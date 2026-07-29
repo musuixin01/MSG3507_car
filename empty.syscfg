@@ -1,0 +1,163 @@
+/**
+ * MSPM0G3507 smart-car hardware configuration.
+ * Generated/validated with MSPM0 SDK 2.11.00.07 and SysConfig 1.28.
+ */
+//@cliArgs --device "MSPM0G350X" --package "LQFP-64(PM)" --part "Default"
+//@v2CliArgs --device "MSPM0G3507" --package "LQFP-64(PM)"
+// @cliArgs --board /ti/boards/LP_MSPM0G3507 --rtos nortos
+
+const Board  = scripting.addModule("/ti/driverlib/Board", {}, false);
+const SYSCTL = scripting.addModule("/ti/driverlib/SYSCTL");
+const GPIO   = scripting.addModule("/ti/driverlib/GPIO", {}, false);
+const PWM    = scripting.addModule("/ti/driverlib/PWM", {}, false);
+const QEI    = scripting.addModule("/ti/driverlib/QEI", {}, false);
+const UART   = scripting.addModule("/ti/driverlib/UART", {}, false);
+const I2C    = scripting.addModule("/ti/driverlib/I2C", {}, false);
+
+SYSCTL.forceDefaultClkConfig = true;
+SYSCTL.clockTreeEn = true;
+
+const MOTOR_DIR = GPIO.addInstance();
+MOTOR_DIR.$name = "MOTOR_DIR";
+MOTOR_DIR.associatedPins.create(4);
+MOTOR_DIR.associatedPins[0].$name = "AIN1";
+MOTOR_DIR.associatedPins[0].pin.$assign = "PB17";
+MOTOR_DIR.associatedPins[1].$name = "AIN2";
+MOTOR_DIR.associatedPins[1].pin.$assign = "PB19";
+MOTOR_DIR.associatedPins[2].$name = "BIN1";
+MOTOR_DIR.associatedPins[2].pin.$assign = "PA16";
+MOTOR_DIR.associatedPins[3].$name = "BIN2";
+MOTOR_DIR.associatedPins[3].pin.$assign = "PB24";
+
+const OLED = GPIO.addInstance();
+OLED.$name = "OLED";
+OLED.associatedPins.create(2);
+OLED.associatedPins[0].$name = "SCL";
+OLED.associatedPins[0].initialValue = "SET";
+OLED.associatedPins[0].pin.$assign = "PA31";
+OLED.associatedPins[1].$name = "SDA";
+OLED.associatedPins[1].initialValue = "SET";
+OLED.associatedPins[1].pin.$assign = "PA28";
+
+const TRACK = GPIO.addInstance();
+TRACK.$name = "TRACK";
+TRACK.associatedPins.create(8);
+const trackPins = [
+    "PB5", "PB15", "PA10", "PB16",
+    "PA11", "PB12", "PB13", "PB23"
+];
+for (let i = 0; i < 8; i++) {
+    TRACK.associatedPins[i].$name = "OUT" + (i + 1);
+    TRACK.associatedPins[i].direction = "INPUT";
+    TRACK.associatedPins[i].internalResistor = "PULL_UP";
+    TRACK.associatedPins[i].pin.$assign = trackPins[i];
+}
+
+const MPU_INT = GPIO.addInstance();
+MPU_INT.$name = "MPU_INT";
+MPU_INT.associatedPins[0].$name = "SIGNAL";
+MPU_INT.associatedPins[0].direction = "INPUT";
+MPU_INT.associatedPins[0].interruptEn = true;
+MPU_INT.associatedPins[0].polarity = "FALL";
+MPU_INT.associatedPins[0].pin.$assign = "PB4";
+
+const USER_BUTTON = GPIO.addInstance();
+USER_BUTTON.$name = "USER_BUTTON";
+USER_BUTTON.associatedPins[0].$name = "KEY";
+USER_BUTTON.associatedPins[0].direction = "INPUT";
+USER_BUTTON.associatedPins[0].internalResistor = "PULL_UP";
+USER_BUTTON.associatedPins[0].pin.$assign = "PB21";
+
+const ULTRASONIC = GPIO.addInstance();
+ULTRASONIC.$name = "ULTRASONIC";
+ULTRASONIC.associatedPins.create(1);
+ULTRASONIC.associatedPins[0].$name = "ECHO";
+ULTRASONIC.associatedPins[0].direction = "INPUT";
+ULTRASONIC.associatedPins[0].pin.$assign = "PB22";
+
+const MOTOR_PWM = PWM.addInstance();
+MOTOR_PWM.$name = "MOTOR_PWM";
+MOTOR_PWM.timerCount = 1600;
+MOTOR_PWM.timerStartTimer = true;
+MOTOR_PWM.peripheral.$assign = "TIMG0";
+MOTOR_PWM.peripheral.ccp0Pin.$assign = "PA12";
+MOTOR_PWM.peripheral.ccp1Pin.$assign = "PA13";
+MOTOR_PWM.PWM_CHANNEL_0.$name = "PWMA";
+MOTOR_PWM.PWM_CHANNEL_1.$name = "PWMB";
+MOTOR_PWM.PWM_CHANNEL_0.dutyCycle = 0;
+MOTOR_PWM.PWM_CHANNEL_1.dutyCycle = 0;
+
+const BUZZER_PWM = PWM.addInstance();
+BUZZER_PWM.$name = "BUZZER_PWM";
+BUZZER_PWM.timerCount = 16000;
+BUZZER_PWM.timerStartTimer = false;
+BUZZER_PWM.ccIndex = [1];
+BUZZER_PWM.peripheral.$assign = "TIMG7";
+BUZZER_PWM.peripheral.ccp1Pin.$assign = "PA7";
+BUZZER_PWM.PWM_CHANNEL_1.$name = "BUZZER_OUT";
+BUZZER_PWM.PWM_CHANNEL_1.dutyCycle = 50;
+
+const SERVO_PWM = PWM.addInstance();
+SERVO_PWM.$name = "SERVO_PWM";
+SERVO_PWM.clockPrescale = 10;
+SERVO_PWM.timerCount = 64000;
+SERVO_PWM.timerStartTimer = true;
+SERVO_PWM.ccIndex = [0,1,2,3];
+SERVO_PWM.peripheral.$assign = "TIMA0";
+SERVO_PWM.peripheral.ccp0Pin.$assign = "PA21";
+SERVO_PWM.peripheral.ccp1Pin.$assign = "PA22";
+SERVO_PWM.peripheral.ccp2Pin.$assign = "PA15";
+SERVO_PWM.peripheral.ccp3Pin.$assign = "PA17";
+SERVO_PWM.PWM_CHANNEL_0.$name = "CAMERA_PAN";
+SERVO_PWM.PWM_CHANNEL_1.$name = "CAMERA_TILT";
+SERVO_PWM.PWM_CHANNEL_2.$name = "SONAR_PAN";
+SERVO_PWM.PWM_CHANNEL_3.$name = "SONAR_TILT";
+SERVO_PWM.PWM_CHANNEL_0.dutyCycle = 7.5;
+SERVO_PWM.PWM_CHANNEL_1.dutyCycle = 7.5;
+SERVO_PWM.PWM_CHANNEL_2.dutyCycle = 7.5;
+SERVO_PWM.PWM_CHANNEL_3.dutyCycle = 7.5;
+
+const ENCODER_L = GPIO.addInstance();
+ENCODER_L.$name = "ENCODER_L";
+ENCODER_L.associatedPins.create(2);
+ENCODER_L.associatedPins[0].$name = "LEFT_A";
+ENCODER_L.associatedPins[0].direction = "INPUT";
+ENCODER_L.associatedPins[0].interruptEn = true;
+ENCODER_L.associatedPins[0].polarity = "RISE_FALL";
+ENCODER_L.associatedPins[0].pin.$assign = "PA14";
+ENCODER_L.associatedPins[1].$name = "LEFT_B";
+ENCODER_L.associatedPins[1].direction = "INPUT";
+ENCODER_L.associatedPins[1].interruptEn = true;
+ENCODER_L.associatedPins[1].polarity = "RISE_FALL";
+ENCODER_L.associatedPins[1].pin.$assign = "PA25";
+
+const ENCODER_R = QEI.addInstance();
+ENCODER_R.$name = "ENCODER_R";
+ENCODER_R.peripheral.$assign = "TIMG8";
+ENCODER_R.peripheral.ccp0Pin.$assign = "PA26";
+ENCODER_R.peripheral.ccp1Pin.$assign = "PA27";
+
+const BLUETOOTH = UART.addInstance();
+BLUETOOTH.$name = "BLUETOOTH";
+BLUETOOTH.targetBaudRate = 9600;
+BLUETOOTH.peripheral.$assign = "UART1";
+BLUETOOTH.peripheral.txPin.$assign = "PB6";
+BLUETOOTH.peripheral.rxPin.$assign = "PB7";
+
+const K210 = UART.addInstance();
+K210.$name = "K210";
+K210.targetBaudRate = 115200;
+K210.peripheral.$assign = "UART2";
+K210.peripheral.txPin.$assign = "PA23";
+K210.peripheral.rxPin.$assign = "PA24";
+
+const MPU6050 = I2C.addInstance();
+MPU6050.$name = "MPU6050";
+MPU6050.basicEnableController = true;
+MPU6050.basicControllerStandardBusSpeed = "Fast";
+MPU6050.basicControllerBusSpeed = 400000;
+MPU6050.peripheral.$assign = "I2C0";
+MPU6050.peripheral.sdaPin.$assign = "PA0";
+MPU6050.peripheral.sclPin.$assign = "PA1";
+MPU6050.sdaPinConfig.enableConfig = true;
+MPU6050.sclPinConfig.enableConfig = true;
