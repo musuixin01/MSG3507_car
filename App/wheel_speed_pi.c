@@ -14,6 +14,7 @@ static WheelPIState g_rightPI;
 static int32_t g_previousLeft;
 static uint16_t g_previousRight;
 static uint8_t g_sampleDivider;
+
 volatile uint16_t g_wheelSpeedLeftDelta;
 volatile uint16_t g_wheelSpeedRightDelta;
 volatile uint16_t g_wheelSpeedLeftTargetX10;
@@ -28,10 +29,32 @@ static float clampFloat(float value, float minimum, float maximum)
     return value;
 }
 
+static float slewFloat(float current, float target, float maximumStep)
+{
+    float difference = target - current;
+
+    if (difference > maximumStep) {
+        difference = maximumStep;
+    } else if (difference < -maximumStep) {
+        difference = -maximumStep;
+    }
+    return current + difference;
+}
+
 static uint16_t absoluteDelta32(int32_t value)
 {
     if (value < 0) value = -value;
     return (value > 65535) ? 65535U : (uint16_t) value;
+}
+
+static int32_t signedDelta16(uint16_t current, uint16_t previous)
+{
+    uint16_t delta = (uint16_t) (current - previous);
+
+    if (delta <= 0x7FFFU) {
+        return (int32_t) delta;
+    }
+    return (int32_t) delta - 65536;
 }
 
 static float updateOneWheel(WheelPIState *state, float targetPercent,
@@ -42,6 +65,7 @@ static float updateOneWheel(WheelPIState *state, float targetPercent,
     float candidateIntegral;
     float dynamicOutputLimit;
     float output;
+    float outputSlewStep;
 
     targetPercent = clampFloat(targetPercent, 0.0f,
         LINE_MOTOR_HARD_LIMIT_PERCENT);
@@ -64,8 +88,13 @@ static float updateOneWheel(WheelPIState *state, float targetPercent,
         (SPEED_PI_KP * error) +
         (SPEED_PI_KI * candidateIntegral);
     output = clampFloat(output, 0.0f, dynamicOutputLimit);
+    outputSlewStep = (output < state->output) ?
+        SPEED_PI_OUTPUT_DECEL_SLEW_PER_SAMPLE :
+        SPEED_PI_OUTPUT_ACCEL_SLEW_PER_SAMPLE;
+    output = slewFloat(state->output, output,
+        outputSlewStep);
+    output = clampFloat(output, 0.0f, dynamicOutputLimit);
 
-    /* 饱和时冻结会继续推向饱和方向的积分。 */
     if (((output < dynamicOutputLimit) &&
          (output > 0.0f)) ||
         ((output >= dynamicOutputLimit) && (error < 0.0f)) ||
@@ -105,7 +134,7 @@ void WheelSpeedPI_Update(float leftTargetPercent,
     int32_t leftNow;
     uint16_t rightNow;
     int32_t leftDifference;
-    int16_t rightDifference;
+    int32_t rightDifference;
     float leftOutput;
     float rightOutput;
 
@@ -126,11 +155,11 @@ void WheelSpeedPI_Update(float leftTargetPercent,
     leftNow = BSP_Encoder_GetLeft();
     rightNow = BSP_Encoder_GetRight();
     leftDifference = leftNow - g_previousLeft;
-    rightDifference = (int16_t) (rightNow - g_previousRight);
+    rightDifference = signedDelta16(rightNow, g_previousRight);
     g_previousLeft = leftNow;
     g_previousRight = rightNow;
     g_wheelSpeedLeftDelta = absoluteDelta32(leftDifference);
-    g_wheelSpeedRightDelta = absoluteDelta32((int32_t) rightDifference);
+    g_wheelSpeedRightDelta = absoluteDelta32(rightDifference);
 
 #if SPEED_PI_ENABLE
     leftOutput = updateOneWheel(&g_leftPI, leftTargetPercent,
@@ -138,10 +167,6 @@ void WheelSpeedPI_Update(float leftTargetPercent,
     rightOutput = updateOneWheel(&g_rightPI, rightTargetPercent,
         g_wheelSpeedRightDelta, SPEED_PI_RIGHT_REFERENCE_COUNTS);
 #else
-    /*
-     * 未标定时安全旁路：目标值直接作为 PWM，但仍受循迹硬上限约束。
-     * 填写左右参考计数后再打开 SPEED_PI_ENABLE。
-     */
     leftOutput = clampFloat(leftTargetPercent, 0.0f,
         LINE_MOTOR_HARD_LIMIT_PERCENT);
     rightOutput = clampFloat(rightTargetPercent, 0.0f,
@@ -161,15 +186,11 @@ void WheelSpeedPI_RunCalibration(float pwmPercent)
     int32_t leftNow;
     uint16_t rightNow;
     int32_t leftDifference;
-    int16_t rightDifference;
+    int32_t rightDifference;
 
     pwmPercent = clampFloat(pwmPercent, 0.0f,
         LINE_MOTOR_HARD_LIMIT_PERCENT);
 
-    /*
-     * 标定模式不经过循迹和PI：两轮固定PWM，编码器仍按20 ms采样。
-     * 电机每个5 ms周期都刷新，避免首次输出等待采样分频结束。
-     */
     BSP_Motor_Set(BSP_MOTOR_LEFT, (int8_t) pwmPercent);
     BSP_Motor_Set(BSP_MOTOR_RIGHT, (int8_t) pwmPercent);
     g_leftPI.output = pwmPercent;
@@ -183,39 +204,9 @@ void WheelSpeedPI_RunCalibration(float pwmPercent)
     leftNow = BSP_Encoder_GetLeft();
     rightNow = BSP_Encoder_GetRight();
     leftDifference = leftNow - g_previousLeft;
-    rightDifference = (int16_t) (rightNow - g_previousRight);
+    rightDifference = signedDelta16(rightNow, g_previousRight);
     g_previousLeft = leftNow;
     g_previousRight = rightNow;
     g_wheelSpeedLeftDelta = absoluteDelta32(leftDifference);
-    g_wheelSpeedRightDelta =
-        absoluteDelta32((int32_t) rightDifference);
-}
-
-uint16_t WheelSpeedPI_GetLeftDelta(void)
-{
-    return g_wheelSpeedLeftDelta;
-}
-
-uint16_t WheelSpeedPI_GetRightDelta(void)
-{
-    return g_wheelSpeedRightDelta;
-}
-
-int16_t WheelSpeedPI_GetLeftOutput(void)
-{
-    return (int16_t) g_leftPI.output;
-}
-
-int16_t WheelSpeedPI_GetRightOutput(void)
-{
-    return (int16_t) g_rightPI.output;
-}
-
-bool WheelSpeedPI_IsEnabled(void)
-{
-#if SPEED_PI_ENABLE
-    return true;
-#else
-    return false;
-#endif
+    g_wheelSpeedRightDelta = absoluteDelta32(rightDifference);
 }

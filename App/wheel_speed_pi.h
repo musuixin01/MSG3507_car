@@ -1,7 +1,6 @@
 #ifndef WHEEL_SPEED_PI_H
 #define WHEEL_SPEED_PI_H
 
-#include <stdbool.h>
 #include <stdint.h>
 
 /* 供 Keil Watch 直接观察，volatile 可避免优化后无法求值。 */
@@ -21,11 +20,5 @@ void WheelSpeedPI_Reset(void);
 void WheelSpeedPI_Update(float leftTargetPercent,
     float rightTargetPercent);
 void WheelSpeedPI_RunCalibration(float pwmPercent);
-
-uint16_t WheelSpeedPI_GetLeftDelta(void);
-uint16_t WheelSpeedPI_GetRightDelta(void);
-int16_t WheelSpeedPI_GetLeftOutput(void);
-int16_t WheelSpeedPI_GetRightOutput(void);
-bool WheelSpeedPI_IsEnabled(void);
 
 #endif

@@ -11,6 +11,19 @@ typedef struct {
     bool marker;
 } LineObservation;
 
+extern volatile uint8_t g_lineRunStateDebug;
+extern volatile uint8_t g_linePatternDebug;
+extern volatile uint8_t g_lineEdgeDebug;
+extern volatile uint8_t g_lineActiveCountDebug;
+extern volatile uint8_t g_lineMarkerDebug;
+extern volatile uint8_t g_lineMarkerApproachSamplesDebug;
+extern volatile int16_t g_lineErrorX1000Debug;
+extern volatile int16_t g_lineSteeringX10Debug;
+extern volatile uint16_t g_lineSpeedCommandX10Debug;
+extern volatile uint16_t g_lineLostElapsedMs;
+extern volatile uint16_t g_lineLostLeftCommandX10;
+extern volatile uint16_t g_lineLostRightCommandX10;
+
 void LineFollow_Init(void);
 void LineFollow_CalibrateSensors(void);
 LineObservation LineFollow_Read(void);
@@ -19,12 +32,5 @@ void LineFollow_Stop(void);
 uint8_t LineFollow_GetPattern(void);
 uint8_t LineFollow_GetRawHighPattern(void);
 bool LineFollow_IsVisible(void);
-float LineFollow_GetError(void);
-uint16_t LineFollow_GetLeftSpeedCounts(void);
-uint16_t LineFollow_GetRightSpeedCounts(void);
-int16_t LineFollow_GetLeftCommand(void);
-int16_t LineFollow_GetRightCommand(void);
-bool LineFollow_IsSpeedLoopArmed(void);
-bool LineFollow_IsStartConfirmed(void);
 
 #endif
