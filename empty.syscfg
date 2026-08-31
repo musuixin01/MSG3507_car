@@ -39,14 +39,12 @@ OLED.associatedPins[1].$name = "SDA";
 OLED.associatedPins[1].initialValue = "SET";
 OLED.associatedPins[1].pin.$assign = "PA28";
 
+/* Five digital tracking channels: OUT1 ... OUT5, left to right. */
 const TRACK = GPIO.addInstance();
 TRACK.$name = "TRACK";
-TRACK.associatedPins.create(8);
-const trackPins = [
-    "PB5", "PB15", "PA10", "PB16",
-    "PA11", "PB12", "PB13", "PB23"
-];
-for (let i = 0; i < 8; i++) {
+TRACK.associatedPins.create(5);
+const trackPins = ["PB5", "PB15", "PA10", "PB16", "PA11"];
+for (let i = 0; i < 5; i++) {
     TRACK.associatedPins[i].$name = "OUT" + (i + 1);
     TRACK.associatedPins[i].direction = "INPUT";
     TRACK.associatedPins[i].internalResistor = "PULL_UP";
@@ -102,20 +100,11 @@ SERVO_PWM.$name = "SERVO_PWM";
 SERVO_PWM.clockPrescale = 10;
 SERVO_PWM.timerCount = 64000;
 SERVO_PWM.timerStartTimer = true;
-SERVO_PWM.ccIndex = [0,1,2,3];
+SERVO_PWM.ccIndex = [0];
 SERVO_PWM.peripheral.$assign = "TIMA0";
 SERVO_PWM.peripheral.ccp0Pin.$assign = "PA21";
-SERVO_PWM.peripheral.ccp1Pin.$assign = "PA22";
-SERVO_PWM.peripheral.ccp2Pin.$assign = "PA15";
-SERVO_PWM.peripheral.ccp3Pin.$assign = "PA17";
 SERVO_PWM.PWM_CHANNEL_0.$name = "CAMERA_PAN";
-SERVO_PWM.PWM_CHANNEL_1.$name = "CAMERA_TILT";
-SERVO_PWM.PWM_CHANNEL_2.$name = "SONAR_PAN";
-SERVO_PWM.PWM_CHANNEL_3.$name = "SONAR_TILT";
 SERVO_PWM.PWM_CHANNEL_0.dutyCycle = 7.5;
-SERVO_PWM.PWM_CHANNEL_1.dutyCycle = 7.5;
-SERVO_PWM.PWM_CHANNEL_2.dutyCycle = 7.5;
-SERVO_PWM.PWM_CHANNEL_3.dutyCycle = 7.5;
 
 const ENCODER_L = GPIO.addInstance();
 ENCODER_L.$name = "ENCODER_L";
@@ -137,19 +126,12 @@ ENCODER_R.peripheral.$assign = "TIMG8";
 ENCODER_R.peripheral.ccp0Pin.$assign = "PA26";
 ENCODER_R.peripheral.ccp1Pin.$assign = "PA27";
 
-const BLUETOOTH = UART.addInstance();
-BLUETOOTH.$name = "BLUETOOTH";
-BLUETOOTH.targetBaudRate = 9600;
-BLUETOOTH.peripheral.$assign = "UART1";
-BLUETOOTH.peripheral.txPin.$assign = "PB6";
-BLUETOOTH.peripheral.rxPin.$assign = "PB7";
-
 const K210 = UART.addInstance();
 K210.$name = "K210";
 K210.targetBaudRate = 115200;
-K210.peripheral.$assign = "UART2";
-K210.peripheral.txPin.$assign = "PA23";
-K210.peripheral.rxPin.$assign = "PA24";
+K210.peripheral.$assign = "UART1";
+K210.peripheral.txPin.$assign = "PB6";
+K210.peripheral.rxPin.$assign = "PB7";
 
 const MPU6050 = I2C.addInstance();
 MPU6050.$name = "MPU6050";

@@ -8,9 +8,6 @@
 void BSP_Servo_Init(void)
 {
     BSP_Servo_SetPulseUs(BSP_SERVO_CAMERA_PAN, 1500U);
-    BSP_Servo_SetPulseUs(BSP_SERVO_CAMERA_TILT, 1500U);
-    BSP_Servo_SetPulseUs(BSP_SERVO_SONAR_PAN, 1500U);
-    BSP_Servo_SetPulseUs(BSP_SERVO_SONAR_TILT, 1500U);
 }
 
 void BSP_Servo_SetPulseUs(BSP_Servo servo, uint16_t pulseUs)

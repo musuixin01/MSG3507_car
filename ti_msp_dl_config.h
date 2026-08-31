@@ -119,24 +119,6 @@ extern "C" {
 #define GPIO_SERVO_PWM_C0_IOMUX                                  (IOMUX_PINCM46)
 #define GPIO_SERVO_PWM_C0_IOMUX_FUNC                 IOMUX_PINCM46_PF_TIMA0_CCP0
 #define GPIO_SERVO_PWM_C0_IDX                                DL_TIMER_CC_0_INDEX
-/* GPIO defines for channel 1 */
-#define GPIO_SERVO_PWM_C1_PORT                                             GPIOA
-#define GPIO_SERVO_PWM_C1_PIN                                     DL_GPIO_PIN_22
-#define GPIO_SERVO_PWM_C1_IOMUX                                  (IOMUX_PINCM47)
-#define GPIO_SERVO_PWM_C1_IOMUX_FUNC                 IOMUX_PINCM47_PF_TIMA0_CCP1
-#define GPIO_SERVO_PWM_C1_IDX                                DL_TIMER_CC_1_INDEX
-/* GPIO defines for channel 2 */
-#define GPIO_SERVO_PWM_C2_PORT                                             GPIOA
-#define GPIO_SERVO_PWM_C2_PIN                                     DL_GPIO_PIN_15
-#define GPIO_SERVO_PWM_C2_IOMUX                                  (IOMUX_PINCM37)
-#define GPIO_SERVO_PWM_C2_IOMUX_FUNC                 IOMUX_PINCM37_PF_TIMA0_CCP2
-#define GPIO_SERVO_PWM_C2_IDX                                DL_TIMER_CC_2_INDEX
-/* GPIO defines for channel 3 */
-#define GPIO_SERVO_PWM_C3_PORT                                             GPIOA
-#define GPIO_SERVO_PWM_C3_PIN                                     DL_GPIO_PIN_17
-#define GPIO_SERVO_PWM_C3_IOMUX                                  (IOMUX_PINCM39)
-#define GPIO_SERVO_PWM_C3_IOMUX_FUNC                 IOMUX_PINCM39_PF_TIMA0_CCP3
-#define GPIO_SERVO_PWM_C3_IDX                                DL_TIMER_CC_3_INDEX
 
 
 
@@ -173,35 +155,19 @@ extern "C" {
 #define GPIO_MPU6050_IOMUX_SCL_FUNC                     IOMUX_PINCM2_PF_I2C0_SCL
 
 
-/* Defines for BLUETOOTH */
-#define BLUETOOTH_INST                                                     UART1
-#define BLUETOOTH_INST_FREQUENCY                                        32000000
-#define BLUETOOTH_INST_IRQHandler                               UART1_IRQHandler
-#define BLUETOOTH_INST_INT_IRQN                                   UART1_INT_IRQn
-#define GPIO_BLUETOOTH_RX_PORT                                             GPIOB
-#define GPIO_BLUETOOTH_TX_PORT                                             GPIOB
-#define GPIO_BLUETOOTH_RX_PIN                                      DL_GPIO_PIN_7
-#define GPIO_BLUETOOTH_TX_PIN                                      DL_GPIO_PIN_6
-#define GPIO_BLUETOOTH_IOMUX_RX                                  (IOMUX_PINCM24)
-#define GPIO_BLUETOOTH_IOMUX_TX                                  (IOMUX_PINCM23)
-#define GPIO_BLUETOOTH_IOMUX_RX_FUNC                   IOMUX_PINCM24_PF_UART1_RX
-#define GPIO_BLUETOOTH_IOMUX_TX_FUNC                   IOMUX_PINCM23_PF_UART1_TX
-#define BLUETOOTH_BAUD_RATE                                               (9600)
-#define BLUETOOTH_IBRD_32_MHZ_9600_BAUD                                    (208)
-#define BLUETOOTH_FBRD_32_MHZ_9600_BAUD                                     (21)
 /* Defines for K210 */
-#define K210_INST                                                          UART2
+#define K210_INST                                                          UART1
 #define K210_INST_FREQUENCY                                             32000000
-#define K210_INST_IRQHandler                                    UART2_IRQHandler
-#define K210_INST_INT_IRQN                                        UART2_INT_IRQn
-#define GPIO_K210_RX_PORT                                                  GPIOA
-#define GPIO_K210_TX_PORT                                                  GPIOA
-#define GPIO_K210_RX_PIN                                          DL_GPIO_PIN_24
-#define GPIO_K210_TX_PIN                                          DL_GPIO_PIN_23
-#define GPIO_K210_IOMUX_RX                                       (IOMUX_PINCM54)
-#define GPIO_K210_IOMUX_TX                                       (IOMUX_PINCM53)
-#define GPIO_K210_IOMUX_RX_FUNC                        IOMUX_PINCM54_PF_UART2_RX
-#define GPIO_K210_IOMUX_TX_FUNC                        IOMUX_PINCM53_PF_UART2_TX
+#define K210_INST_IRQHandler                                    UART1_IRQHandler
+#define K210_INST_INT_IRQN                                        UART1_INT_IRQn
+#define GPIO_K210_RX_PORT                                                  GPIOB
+#define GPIO_K210_TX_PORT                                                  GPIOB
+#define GPIO_K210_RX_PIN                                           DL_GPIO_PIN_7
+#define GPIO_K210_TX_PIN                                           DL_GPIO_PIN_6
+#define GPIO_K210_IOMUX_RX                                       (IOMUX_PINCM24)
+#define GPIO_K210_IOMUX_TX                                       (IOMUX_PINCM23)
+#define GPIO_K210_IOMUX_RX_FUNC                        IOMUX_PINCM24_PF_UART1_RX
+#define GPIO_K210_IOMUX_TX_FUNC                        IOMUX_PINCM23_PF_UART1_TX
 #define K210_BAUD_RATE                                                  (115200)
 #define K210_IBRD_32_MHZ_115200_BAUD                                        (17)
 #define K210_FBRD_32_MHZ_115200_BAUD                                        (23)
@@ -255,18 +221,6 @@ extern "C" {
 #define TRACK_OUT5_PORT                                                  (GPIOA)
 #define TRACK_OUT5_PIN                                          (DL_GPIO_PIN_11)
 #define TRACK_OUT5_IOMUX                                         (IOMUX_PINCM22)
-/* Defines for OUT6: GPIOB.12 with pinCMx 29 on package pin 64 */
-#define TRACK_OUT6_PORT                                                  (GPIOB)
-#define TRACK_OUT6_PIN                                          (DL_GPIO_PIN_12)
-#define TRACK_OUT6_IOMUX                                         (IOMUX_PINCM29)
-/* Defines for OUT7: GPIOB.13 with pinCMx 30 on package pin 1 */
-#define TRACK_OUT7_PORT                                                  (GPIOB)
-#define TRACK_OUT7_PIN                                          (DL_GPIO_PIN_13)
-#define TRACK_OUT7_IOMUX                                         (IOMUX_PINCM30)
-/* Defines for OUT8: GPIOB.23 with pinCMx 51 on package pin 22 */
-#define TRACK_OUT8_PORT                                                  (GPIOB)
-#define TRACK_OUT8_PIN                                          (DL_GPIO_PIN_23)
-#define TRACK_OUT8_IOMUX                                         (IOMUX_PINCM51)
 /* Port definition for Pin Group MPU_INT */
 #define MPU_INT_PORT                                                     (GPIOB)
 
@@ -316,7 +270,6 @@ void SYSCFG_DL_BUZZER_PWM_init(void);
 void SYSCFG_DL_SERVO_PWM_init(void);
 void SYSCFG_DL_ENCODER_R_init(void);
 void SYSCFG_DL_MPU6050_init(void);
-void SYSCFG_DL_BLUETOOTH_init(void);
 void SYSCFG_DL_K210_init(void);
 
 

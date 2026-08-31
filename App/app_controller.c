@@ -27,6 +27,7 @@ static uint8_t g_markerSamples;
 static uint8_t g_markerClearSamples;
 static bool g_finishMarkerArmed;
 static uint16_t g_encoderStart;
+static uint16_t g_task3ServoPulseUs;
 
 static uint16_t encoderDelta(void)
 {
@@ -56,6 +57,8 @@ void AppController_Init(void)
     LineFollow_Init();
     BallControl_Init();
     Vision_Init();
+    /* The normal 1500 us startup output is also the calibrated task-3 O point. */
+    g_task3ServoPulseUs = TASK3_CENTER_PULSE_US;
     g_mode = APP_MODE_VIDEO;
     g_state = RUN_IDLE;
 }
@@ -64,6 +67,13 @@ void AppController_SelectMode(AppMode mode)
 {
     if ((g_state != RUN_ACTIVE) &&
         (mode >= APP_MODE_VIDEO) && (mode <= APP_MODE_LAP_POSITION)) {
+        /* Mode 3 holds the final -5 cm posture until the next mode is chosen. */
+        if ((g_mode == APP_MODE_BALL_STATIC) &&
+            (mode != APP_MODE_BALL_STATIC)) {
+            g_task3ServoPulseUs = TASK3_CENTER_PULSE_US;
+            BSP_Servo_SetPulseUs(BSP_SERVO_CAMERA_PAN,
+                TASK3_CENTER_PULSE_US);
+        }
         g_mode = mode;
     }
 }
@@ -156,23 +166,66 @@ static void updateLap(uint32_t nowMs, bool balanceEnabled)
     }
 }
 
+/* Move the commanded pulse by a fixed amount each 5 ms control tick. */
+static void task3SetServoSmooth(uint16_t targetPulseUs)
+{
+    if (g_task3ServoPulseUs < targetPulseUs) {
+        if ((uint16_t) (targetPulseUs - g_task3ServoPulseUs) >
+            TASK3_SERVO_SLEW_US_PER_TICK) {
+            g_task3ServoPulseUs += TASK3_SERVO_SLEW_US_PER_TICK;
+        } else {
+            g_task3ServoPulseUs = targetPulseUs;
+        }
+    } else if (g_task3ServoPulseUs > targetPulseUs) {
+        if ((uint16_t) (g_task3ServoPulseUs - targetPulseUs) >
+            TASK3_SERVO_SLEW_US_PER_TICK) {
+            g_task3ServoPulseUs -= TASK3_SERVO_SLEW_US_PER_TICK;
+        } else {
+            g_task3ServoPulseUs = targetPulseUs;
+        }
+    }
+    BSP_Servo_SetPulseUs(BSP_SERVO_CAMERA_PAN, g_task3ServoPulseUs);
+}
+
 static void updateTask3(uint32_t nowMs)
 {
-    updateBall(nowMs);
+    uint32_t stageElapsedMs = nowMs - g_stageMs;
+
+    /*
+     * Task 3 deliberately does not use Vision_Poll() or BallControl_Update().
+     * It is a repeatable open-loop profile; tune its pulse/time constants in
+     * app_config.h against the actual beam before the competition run.
+     */
     if (g_task3Stage == 0U) {
-        BallControl_SetTargetMm(50);
+        task3SetServoSmooth(TASK3_CENTER_PULSE_US);
+        if (stageElapsedMs < TASK3_CENTER_SETTLE_MS) return;
         g_task3Stage = 1U;
-        g_stageMs = nowMs;
-    } else if ((g_task3Stage == 1U) &&
-        (BallControl_IsStable() ||
-         ((nowMs - g_stageMs) >= TASK3_STAGE_TIMEOUT_MS))) {
-        BallControl_SetTargetMm(-50);
+        g_stageMs += TASK3_CENTER_SETTLE_MS;
+    }
+
+    if (g_task3Stage == 1U) {
+        task3SetServoSmooth(TASK3_DOWN_TO_POSITIVE_5CM_PULSE_US);
+        if ((nowMs - g_stageMs) < TASK3_DOWN_TO_POSITIVE_5CM_MS) return;
         g_task3Stage = 2U;
-        g_stageMs = nowMs;
-    } else if ((g_task3Stage == 2U) &&
-        BallControl_IsStable()) {
-        complete(nowMs);
-    } else if ((nowMs - g_startMs) > 5000U) {
+        g_stageMs += TASK3_DOWN_TO_POSITIVE_5CM_MS;
+    }
+
+    if (g_task3Stage == 2U) {
+        task3SetServoSmooth(TASK3_CENTER_PULSE_US);
+        if ((nowMs - g_stageMs) < TASK3_RETURN_TO_CENTER_MS) return;
+        g_task3Stage = 3U;
+        g_stageMs += TASK3_RETURN_TO_CENTER_MS;
+    }
+
+    if (g_task3Stage == 3U) {
+        task3SetServoSmooth(TASK3_UP_TO_NEGATIVE_5CM_PULSE_US);
+        if ((nowMs - g_stageMs) < TASK3_UP_TO_NEGATIVE_5CM_MS) return;
+        g_task3Stage = 4U;
+        g_stageMs += TASK3_UP_TO_NEGATIVE_5CM_MS;
+    }
+
+    task3SetServoSmooth(TASK3_NEGATIVE_HOLD_PULSE_US);
+    if ((nowMs - g_stageMs) >= TASK3_NEGATIVE_SETTLE_MS) {
         complete(nowMs);
     }
 }

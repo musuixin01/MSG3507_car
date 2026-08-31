@@ -19,16 +19,6 @@ static bool readByte(UART_Regs *uart, uint8_t *data)
     return true;
 }
 
-void Bluetooth_Send(const uint8_t *data, size_t length)
-{
-    sendBytes(BLUETOOTH_INST, data, length);
-}
-
-bool Bluetooth_ReadByte(uint8_t *data)
-{
-    return readByte(BLUETOOTH_INST, data);
-}
-
 void K210_Send(const uint8_t *data, size_t length)
 {
     sendBytes(K210_INST, data, length);

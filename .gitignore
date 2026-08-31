@@ -1,0 +1,44 @@
+# Keil / embedded build outputs
+**/Objects/
+**/Listings/
+*.axf
+*.elf
+*.hex
+*.bin
+*.map
+*.o
+*.obj
+*.d
+*.dep
+*.crf
+*.lst
+*.lnp
+*.sct
+*.htm
+*.log
+
+# Generated linker intermediates
+*.genlibs
+device.opt
+device_linker.cmd
+device_linker.lds
+
+# User-specific IDE state
+*.uvguix.*
+*.uvguix
+
+# Local one-off repair scripts
+_check_func.py
+_fix_*.py
+_fix_*.ps1
+fix_*.ps1
+
+# Python/editor cache
+__pycache__/
+*.py[cod]
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -294,13 +294,13 @@ void OLED_ShowTrackPattern(
         drawText(0U, 4U, "LOST");
     } else {
         drawText(0U, 4U, "B");
-        for (i = 0; i < 8U; i++) {
+        for (i = 0; i < 5U; i++) {
             drawChar((uint8_t) (12U + (i * 7U)), 4U,
                 (pattern & (1U << i)) ? '1' : '0');
         }
     }
     drawText(0U, 5U, "R");
-    for (i = 0; i < 8U; i++) {
+    for (i = 0; i < 5U; i++) {
         drawChar((uint8_t) (12U + (i * 7U)), 5U,
             (rawHighPattern & (1U << i)) ? '1' : '0');
     }
