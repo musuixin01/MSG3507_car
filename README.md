@@ -21,6 +21,13 @@
 
 ## 系统架构
 
+<p align="center">
+  <img src="docs/assets/control-architecture.svg" alt="MSPM0G3507 车载循迹与滚球控制系统架构图" width="100%">
+</p>
+
+<sub>图示依据 App、BSP 与 K210 相关源码整理，不是实车照片，也不代表已达到赛题速度和精度指标。下方 Mermaid 保留为可编辑的逻辑关系图。</sub>
+
+
 ```mermaid
 flowchart LR
     S["五路红外传感器"] --> LF["加权误差与 PD 循迹"]
